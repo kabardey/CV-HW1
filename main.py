@@ -29,11 +29,72 @@ class App(QMainWindow):
 
     def openInputImage(self):
         # This function is called when the user clicks File->Input Image.
-        return NotImplementedError
+
+        self.inputLoaded = True
+
+        # ******** place image into qlabel object *********************
+        imagePath, _ = QFileDialog.getOpenFileName()
+        self.inputImg = cv2.imread(imagePath)
+
+        pixmap_label = self.qlabel1
+
+        height, width, channel = self.inputImg.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(self.inputImg.data, width, height, bytesPerLine, QImage.Format_RGB888).rgbSwapped()
+        pixmap = QPixmap(qImg)
+
+        pixmap = pixmap.scaled(300, 300, Qt.KeepAspectRatio)
+        pixmap_label.setPixmap(pixmap)
+        # **************************************************************
+
+        # **************** create histogram ***************************
+        # allocate for histogram
+        self.hist1 = np.zeros(([256, channel]))
+
+        # create the histogram
+        for g in range(256):
+            for b in range(3):  # through channels
+                self.hist1[g, b] = np.sum(np.sum(self.inputImg[:, :, b] == g, 0), 0)
+        # **************************************************************
+
+        # ************* add histogram to hbox object ******************
+        self.myfig = PlotCanvas(self, width=5, height=4, dpi=100, histr=self.hist1, title="Input Image")
+        self.hBoxlayout2.addWidget(self.myfig)
 
     def openTargetImage(self):
         # This function is called when the user clicks File->Target Image.
-        return NotImplementedError
+
+        self.targetLoaded = True
+
+        # ******** place image into qlabel object *********************
+        imagePath, _ = QFileDialog.getOpenFileName()
+        self.targetImg = cv2.imread(imagePath)
+
+        pixmap_label = self.qlabel2
+
+        height, width, channel = self.targetImg.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(self.targetImg.data, width, height, bytesPerLine, QImage.Format_RGB888).rgbSwapped()
+        pixmap = QPixmap(qImg)
+
+        pixmap = pixmap.scaled(300, 300, Qt.KeepAspectRatio)
+        pixmap_label.setPixmap(pixmap)
+        # **************************************************************
+
+        # **************** create histogram ***************************
+        # allocate for histogram
+        self.hist2 = np.zeros(([256, channel]))
+
+        # create the histogram
+        for g in range(256):
+            for b in range(3):  # through channels
+                self.hist2[g, b] = np.sum(np.sum(self.targetImg[:, :, b] == g, 0), 0)
+
+        # **************************************************************
+
+        # ************* add histogram to hbox object ******************
+        self.myfig = PlotCanvas(self, width=5, height=4, dpi=100, histr=self.hist2, title="Target Image")
+        self.hBoxlayout2.addWidget(self.myfig)
 
     def initUI(self):
         # Write GUI initialization code
@@ -120,14 +181,32 @@ class App(QMainWindow):
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, hist, parent=None, width=5, height=4, dpi=100):
-        return NotImplementedError
-        # Init Canvas
-        self.plotHistogram(hist)
+    def __init__(self, parent=None, width=5, height=4, dpi=100, histr=0, title=""):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes1 = fig.add_subplot(311)
+        self.axes2 = fig.add_subplot(312)
+        self.axes3 = fig.add_subplot(313)
 
-    def plotHistogram(self, hist):
-        return NotImplementedError
-        # Plot histogram
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        self.plotHistogram(histr, title)
+
+
+    def plotHistogram(self, histr, title):
+        ######## create histogram ########
+
+        ax1 = self.axes1
+        ax1.bar(range(0, 256), histr[:, 0], color=[0, 0, 1])
+        ax1.set_title(title)
+
+        ax2 = self.axes2
+        ax2.bar(range(0, 256), histr[:, 1], color=[0, 1, 0])
+
+        ax3 = self.axes3
+        ax3.bar(range(0, 256), histr[:, 2], color=[1, 0, 0])
 
         self.draw()
 
