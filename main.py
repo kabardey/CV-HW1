@@ -25,12 +25,16 @@ class App(QMainWindow):
         self.inputLoaded = False
         self.targetLoaded = False
 
+        self.count1 = 0
+        self.count2 = 0
+
         self.initUI()
 
     def openInputImage(self):
         # This function is called when the user clicks File->Input Image.
 
         self.inputLoaded = True
+        self.count1 = self.count1 + 1
 
         # ******** place image into qlabel object *********************
         imagePath, _ = QFileDialog.getOpenFileName()
@@ -57,6 +61,11 @@ class App(QMainWindow):
                 self.hist1[g, b] = np.sum(np.sum(self.inputImg[:, :, b] == g, 0), 0)
         # **************************************************************
 
+        if(self.count1 >= 2):
+            self.hBoxlayout2.removeWidget(self.myfig)
+            self.myfig.deleteLater()
+            self.myfig = None
+
         # ************* add histogram to hbox object ******************
         self.myfig = PlotCanvas(self, width=5, height=4, dpi=100, histr=self.hist1, title="Input Image")
         self.hBoxlayout2.addWidget(self.myfig)
@@ -65,6 +74,7 @@ class App(QMainWindow):
         # This function is called when the user clicks File->Target Image.
 
         self.targetLoaded = True
+        self.count2 = self.count2 + 1
 
         # ******** place image into qlabel object *********************
         imagePath, _ = QFileDialog.getOpenFileName()
@@ -91,6 +101,10 @@ class App(QMainWindow):
                 self.hist2[g, b] = np.sum(np.sum(self.targetImg[:, :, b] == g, 0), 0)
 
         # **************************************************************
+        if (self.count2 >= 2):
+            self.hBoxlayout2.removeWidget(self.myfig)
+            self.myfig.deleteLater()
+            self.myfig = None
 
         # ************* add histogram to hbox object ******************
         self.myfig = PlotCanvas(self, width=5, height=4, dpi=100, histr=self.hist2, title="Target Image")
