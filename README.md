@@ -1,2 +1,2 @@
 # CV-HW1
-Computer Vision-Histogram Matching
+ITU BLG453E-Computer Vision first assignment. Subject: Histogram Matching
